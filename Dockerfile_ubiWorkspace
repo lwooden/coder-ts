@@ -1,0 +1,128 @@
+# Coder Workspace — Red Hat UBI 9
+# Mirrors the structure of coder/images ubuntu.Dockerfile but uses
+# ubi9  as the base and dnf/microdnf as the package manager.
+#
+# References:
+#   https://github.com/coder/images
+#   https://catalog.redhat.com/software/containers/ubi9/ubi
+
+FROM registry.access.redhat.com/ubi9/ubi:9.7
+
+# ---------------------------------------------------------------------------
+# System packages
+# ---------------------------------------------------------------------------
+# Install core development utilities available in UBI 9's default repos.
+# Note: some packages (e.g. man-db) are in the UBI "supplementary" repo and
+# may require a Red Hat subscription inside a RHEL host; they are omitted here
+# so the image builds on any OCI-compliant runtime without a subscription.
+
+# Module + Repo Setups
+RUN dnf module enable nodejs:24 -y && dnf config-manager --add-repo https://download.docker.com/linux/rhel/docker-ce.repo && dnf config-manager --add-repo https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
+RUN tee /etc/yum.repos.d/kubernetes.repo <<'EOF'
+[kubernetes] 
+name=Kubernetes 
+baseurl=https://pkgs.k8s.io/core:/stable:/v1.36/rpm/ 
+enabled=1 
+gpgcheck=1 
+gpgkey=https://pkgs.k8s.io/core:/stable:/v1.36/rpm/repodata/repomd.xml.key 
+EOF
+
+RUN dnf install -y \
+        # Core Utilities
+        wget \
+        git \
+        jq \
+        make \
+        unzip \
+        vim \
+        wget \
+        zip \
+        sudo \
+        shadow-utils \
+        bind-utils \
+        # Node Tooling
+        nodejs \
+        # Python Tooling
+        python3.12 \
+        python3.12-pip \
+        # Go Tooling
+        go-toolset \
+        # Rust Tooling
+        rust-toolset \
+        # Java Tooling
+        java-25-openjdk \
+        maven \
+        # Kubernetes Tooling (kubectl, helm, k9s, etc.) 
+        kubectl \
+        # Container Tooling (docker)
+        # Offloading to Podman for now
+        # container-tools \
+        # DND not working yet
+        docker-ce \
+        docker-ce-cli \
+        containerd.io \
+        docker-buildx-plugin \
+        docker-compose-plugin \
+        # Database Tooling (postgres, mysql, etc.)
+        postgresql \
+        mysql \
+        # Terraform
+        terraform \
+    && dnf clean all \
+    && rm -rf /var/cache/dnf
+
+# Helm
+RUN curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 && chmod 700 get_helm.sh && ./get_helm.sh 
+
+
+# ---------------------------------------------------------------------------
+# Coder user
+# ---------------------------------------------------------------------------
+# Coder injects its agent as the user defined here (UID 1000 by convention).
+# The user is granted passwordless sudo so the agent's startup_script can
+# install additional tooling at workspace-boot time.
+# Create coder user and add to wheel group with passwordless sudo
+RUN useradd -m coder \
+    && usermod -aG wheel coder \
+    && usermod -aG docker coder \
+    && echo "%wheel ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/wheel-nopassword
+
+    
+
+
+# ---------------------------------------------------------------------------
+# Locale / timezone (optional but useful for dev tooling)
+# ---------------------------------------------------------------------------
+# UBI 9 ships glibc-langpack-en; install it for a sane UTF-8 locale.
+RUN dnf install -y glibc-langpack-en && dnf clean all
+ENV LANG=en_US.UTF-8 \
+    LC_ALL=en_US.UTF-8
+
+# Pre-Stage code-server installation
+RUN curl -fsSL https://code-server.dev/install.sh | sh -s --
+
+# ---------------------------------------------------------------------------
+# Default to the coder user
+# ---------------------------------------------------------------------------
+USER coder
+WORKDIR /home/coder
+
+# Pulumi
+RUN curl -fsSL https://get.pulumi.com | sh
+
+# AWS CLI v2
+RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o awscliv2.zip && unzip awscliv2.zip && sudo ./aws/install && rm -rf awscliv2.zip aws
+
+# SAM CLI
+RUN curl -L https://github.com/aws/aws-sam-cli/releases/latest/download/aws-sam-cli-linux-x86_64.zip -o aws-sam-cli-linux-x86_64.zip \
+    && unzip aws-sam-cli-linux-x86_64.zip -d sam-installation \
+    && sudo ./sam-installation/install \
+    && rm -rf aws-sam-cli-linux-x86_64.zip sam-installation
+# Werf (not working yet; requires docker)
+RUN curl -sSL https://werf.io/install.sh | bash -s -- --version 2 --channel stable
+
+# Path Reconciliation
+RUN echo "alias k='kubectl'" >> /home/coder/.bashrc \
+    && echo "alias ll='ls -la'" >> /home/coder/.bashrc \
+   
+    # echo 'export PATH=$HOME/.pulumi/bin:$PATH' >> ~/.bashrc \ i dont need to specify this path as it is already in the PATH
