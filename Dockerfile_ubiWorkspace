@@ -118,8 +118,13 @@ RUN curl -L https://github.com/aws/aws-sam-cli/releases/latest/download/aws-sam-
     && unzip aws-sam-cli-linux-x86_64.zip -d sam-installation \
     && sudo ./sam-installation/install \
     && rm -rf aws-sam-cli-linux-x86_64.zip sam-installation
-# Werf (not working yet; requires docker)
-RUN curl -sSL https://werf.io/install.sh | bash -s -- --version 2 --channel stable
+
+# Helmfile
+RUN curl -fsSL -o /usr/local/bin/helmfile https://github.com/helmfile/helmfile/releases/download/v1.5.2/helmfile_1.5.2_darwin_amd64.tar.gz \
+    && tar -xzf /usr/local/bin/helmfile \
+    && chmod +x /usr/local/bin/helmfile \
+    && rm -rf /usr/local/bin/helmfile
+
 
 # Path Reconciliation
 RUN echo "alias k='kubectl'" >> /home/coder/.bashrc \
