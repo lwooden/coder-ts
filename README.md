@@ -19,7 +19,7 @@ docker save <IMAGE> | gzip > IMAGE_NAME.tar.gz
 ## Redhat Ubi 9 Based Workspace Workflow
 
 Build using Dockerfile_ubiWorkspace
-docker build -t docker.io/lwooden/ubi_coderbase:9.7_dnd . --platform linux/amd64 -f Dockerfile_ubiWorkspace --no-cache --label "description=pin to 9.7, bring back java25 and wrf"
+docker build -t docker.io/lwooden/ubi_coderbase:9.MINOR . --platform linux/amd64 -f Dockerfile_ubiWorkspace --no-cache --label "description=pin to 9.7, bring back java25 and wrf"
 
 Override the Entry Point to Test functionality Locally
 docker run --rm -it --entrypoint "" <IMAGE> /bin/bash
