@@ -27,6 +27,7 @@ gpgcheck=1
 gpgkey=https://pkgs.k8s.io/core:/stable:/v1.36/rpm/repodata/repomd.xml.key 
 EOF
 
+# TODO - upgrade python to 3.14
 RUN dnf install -y \
         # Core Utilities
         wget \
@@ -40,6 +41,7 @@ RUN dnf install -y \
         sudo \
         shadow-utils \
         bind-utils \
+        httpd-tools \
         # Node Tooling
         nodejs \
         # Python Tooling
@@ -73,6 +75,8 @@ RUN dnf install -y \
 
 # Helm
 RUN curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 && chmod 700 get_helm.sh && ./get_helm.sh 
+# Redis CLI (redis-cli)
+RUN curl -fsSL https://packages.redis.io/redis-cli/install.sh | sh
 
 
 # ---------------------------------------------------------------------------
@@ -120,16 +124,15 @@ RUN curl -L https://github.com/aws/aws-sam-cli/releases/latest/download/aws-sam-
     && rm -rf aws-sam-cli-linux-x86_64.zip sam-installation
 
 # Helmfile
-RUN sudo curl -L https://github.com/helmfile/helmfile/releases/download/v1.5.2/helmfile_1.5.2_linux_amd64.tar.gz -o helmfile.tar.gz \
+RUN sudo curl -L https://github.com/helmfile/helmfile/releases/download/v1.8.0/helmfile_1.8.0_linux_amd64.tar.gz -o helmfile.tar.gz \
     && sudo mv helmfile.tar.gz /tmp \
     && sudo tar -xzf /tmp/helmfile.tar.gz \
     && sudo mv helmfile /usr/local/bin \
     && sudo chmod +x /usr/local/bin/helmfile \
     && sudo rm -rf /tmp/*
 
-
+# echo 'export PATH=$HOME/.pulumi/bin:$PATH' >> ~/.bashrc \ i dont need to specify this path as it is already in the PATH
 # Path Reconciliation
 RUN echo "alias k='kubectl'" >> /home/coder/.bashrc \
     && echo "alias ll='ls -la'" >> /home/coder/.bashrc \
    
-    # echo 'export PATH=$HOME/.pulumi/bin:$PATH' >> ~/.bashrc \ i dont need to specify this path as it is already in the PATH
