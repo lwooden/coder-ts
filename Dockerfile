@@ -21,23 +21,23 @@ COPY .terraformrc /home/coder/.terraformrc
 # Optionally, we can "seed" the filesystem mirror with common providers.
 # Comment out lines 40-49 if you plan on only using a volume or network mirror:
 WORKDIR /home/coder/.terraform.d/plugins/registry.terraform.io
-ARG CODER_PROVIDER_VERSION=2.5.0
+ARG CODER_PROVIDER_VERSION=2.19.0
 RUN echo "Adding coder/coder v${CODER_PROVIDER_VERSION}" \
     && mkdir -p coder/coder && cd coder/coder \
     && curl -LOs https://github.com/coder/terraform-provider-coder/releases/download/v${CODER_PROVIDER_VERSION}/terraform-provider-coder_${CODER_PROVIDER_VERSION}_linux_amd64.zip
-ARG DOCKER_PROVIDER_VERSION=3.0.2
+ARG DOCKER_PROVIDER_VERSION=4.6.0
 RUN echo "Adding kreuzwerker/docker v${DOCKER_PROVIDER_VERSION}" \
     && mkdir -p kreuzwerker/docker && cd kreuzwerker/docker \
     && curl -LOs https://github.com/kreuzwerker/terraform-provider-docker/releases/download/v${DOCKER_PROVIDER_VERSION}/terraform-provider-docker_${DOCKER_PROVIDER_VERSION}_linux_amd64.zip
-ARG KUBERNETES_PROVIDER_VERSION=2.36.0
+ARG KUBERNETES_PROVIDER_VERSION=3.2.1
 RUN echo "Adding kubernetes/kubernetes v${KUBERNETES_PROVIDER_VERSION}" \
     && mkdir -p hashicorp/kubernetes && cd hashicorp/kubernetes \
     && curl -LOs https://releases.hashicorp.com/terraform-provider-kubernetes/${KUBERNETES_PROVIDER_VERSION}/terraform-provider-kubernetes_${KUBERNETES_PROVIDER_VERSION}_linux_amd64.zip
-ARG AWS_PROVIDER_VERSION=5.89.0
+ARG AWS_PROVIDER_VERSION=6.66.0
 RUN echo "Adding aws/aws v${AWS_PROVIDER_VERSION}" \
     && mkdir -p aws/aws && cd aws/aws \
     && curl -LOs https://releases.hashicorp.com/terraform-provider-aws/${AWS_PROVIDER_VERSION}/terraform-provider-aws_${AWS_PROVIDER_VERSION}_linux_amd64.zip
-ARG HTTP_PROVIDER_VERSION=3.6.0
+ARG HTTP_PROVIDER_VERSION=3.6.2
 RUN echo "Adding hashicorp/http v${HTTP_PROVIDER_VERSION}" \
     && mkdir -p hashicorp/http && cd hashicorp/http \
     && curl -LOs https://releases.hashicorp.com/terraform-provider-http/${HTTP_PROVIDER_VERSION}/terraform-provider-http_${HTTP_PROVIDER_VERSION}_linux_amd64.zip
