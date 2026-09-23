@@ -8,10 +8,14 @@ MAC OS Testing
 - create a main.tf in coder and copy the contents of test.tf and run terraform init to confirm that everything works
 - my test.tf is based off of the DOCKER coder template; I will need to do this for other templates that I want to use
 
+docker build -t docker.io/lwooden/coder_ts_fs_mirror:v2.37 . -f Dockerfile_MacOS --no-cache
+
 AMD64 Testing (The Real Test)
 - use Dockerfile to pull in amd64 versions of all providers
 - follow testing steps (above)
-- once successful, build platform specfic image by running docker build -t low-coder:v1.0_ts_fsmirror . --no-cache --platform linux/amd64
+- once successful, build platform specfic image
+- 
+- docker build -t low-coder:v1.0_ts_fsmirror . --no-cache --platform linux/amd64
 
 Package up the Image
 docker save <IMAGE> | gzip > IMAGE_NAME.tar.gz
