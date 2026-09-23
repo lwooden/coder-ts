@@ -2,3 +2,5 @@ charts/
 parking_lot/
 *.tar.gz
 registry-main/
+registry-main*
+coder-registry_*
